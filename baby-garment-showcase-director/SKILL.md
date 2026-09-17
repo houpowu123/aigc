@@ -23,6 +23,7 @@ description: Direct Douyin-ready baby clothing content from a fixed AI baby IP i
 7. 阶段二读取 [references/video-script-template.md](references/video-script-template.md)：A1 拼贴图生视频（仅拼贴模式）/ A2 六图轮播（默认）/ B 剪映脚本与挂车。
 8. 涉及直接生成或通道选择时读取 [references/generation-channels.md](references/generation-channels.md)。
 9. 编译发布文案读取 [references/caption-template.md](references/caption-template.md)：全模式输出末尾的发布文案公式（钩子+卖点+引导+标签）、图文向/视频向变体与合规细则。
+10. `poster-swap` 模式读取 [references/poster-swap-template.md](references/poster-swap-template.md)：四张固定底图的样式卡、路径 C 换装编辑提示词模板（通用规则+样式专属条款）与回检清单。
 
 ## 运行模式
 
@@ -31,6 +32,7 @@ description: Direct Douyin-ready baby clothing content from a fixed AI baby IP i
 | `storyboard-images` | 阶段一：分镜图片提示词（输入宝宝图 + 服装图）；仅当用户传入「拼贴 / 穿搭拼贴 / 品贴图」等参数时，额外输出拼贴首帧提示词；全部帧提示词后附一段视频向发布文案（caption-template.md） |
 | `trio-images` | 图文三图：①人手提着衣服的展示图 ②③宝宝上身展示图（抖音图文帖形态，输入同上，画幅默认 3:4），三条提示词后附一段图文向发布文案（caption-template.md） |
 | `beat-video` | 阶段二：视频提示词与剪辑脚本——默认 A2 六图轮播（基于 s1–s6 成图）；启用拼贴模式时改用 A1 拼贴图生视频；随交付物输出发布文案与标签（caption-template.md 视频向） |
+| `poster-swap` | 海报四联换装（路径 C 编辑定稿）：用户仅传一张服装图 → 输出四种固定版式（捧脸小窗/展臂贴墙/坐姿圆镜/提袋展示）的四条换装提示词 + 图文向发布文案；用户在即梦编辑模式自配底图海报+服装图出图（poster-swap-template.md，底图固定资产在 skill 目录 assets\poster-bases\） |
 
 用户一次请求两阶段时，先完成阶段一，再输出阶段二（阶段二提示词中引用「你按帧序选定的成图」，不依赖图片真实存在）。`prompt-only` 是默认输出方式；仅当用户明确说「直接生成」时按 generation-channels.md 检查通道，通道不支持时如实回退，不得静默降级。
 
@@ -73,7 +75,7 @@ description: Direct Douyin-ready baby clothing content from a fixed AI baby IP i
 2. `图像角色表与 IP 核对结果`。
 3. `分镜表`：帧号 | 叙事职责 | 景别机位 | 姿势 | 拍摄角落 | 建议轮播时长。
 4. `拼贴首帧提示词`：**仅拼贴模式输出**——一个 `text` 代码块（七宫格，贴纸内容与 S1–S6 一一对应）。
-5. `每帧图片提示词`：按帧序号命名，每帧一个独立 `text` 代码块（含负面尾注），可直接复制去即梦出图。所有主模式输出末尾必须附一段发布文案（caption-template.md）：`storyboard-images` 全部帧提示词后附视频向、`trio-images` 三条提示词后附图文向，均可直接粘贴发布。
+5. `每帧图片提示词`：按帧序号命名，每帧一个独立 `text` 代码块（含负面尾注），可直接复制去即梦出图；`poster-swap` 模式则输出四条换装提示词（样式1–4 各一条，各标注配对底图，poster-swap-template.md）。所有主模式输出末尾必须附一段发布文案（caption-template.md）：`storyboard-images` 全部帧提示词后附视频向、`trio-images` 三条提示词与 `poster-swap` 四条换装提示词后附图文向，均可直接粘贴发布。
 6. `视频交付物`（**仅 `输出视频` 开启时**）：默认 **A2 六图轮播提示词**；拼贴模式下为 **A1 拼贴图生视频提示词**（`text` 块）+ 剪映逐秒脚本 + 钩子/卖点/结尾文案与发布标签、挂车引导（发布文案按 caption-template.md 视频向）。
 7. `通道说明`：一段话（即梦双参考出拼贴图与分镜图 → 拼贴图作首帧生成视频 → 抖音发布加 AI 标识）。
 
@@ -84,12 +86,13 @@ description: Direct Douyin-ready baby clothing content from a fixed AI baby IP i
 
 ## 最终审计
 
-- 每帧提示词：画幅在第一句？身份锁定块与服装锁定块逐字出现且各帧一致？姿势句、背景句逐字写入？姿势过月龄门控？「单张非拼图」已声明？
+- 每帧提示词：画幅在第一句？身份锁定块与服装锁定块逐字出现且各帧一致？姿势句、背景句逐字写入？姿势过月龄门控？背面类姿势（P3 等）已有服装背面参考图支撑？「单张非拼图」已声明？
 - 分镜：帧数与模板一致？叙事顺序符合生活逻辑（动作可衔接）？**差异审计：相邻帧 ≥3 个维度不同且机位角度不同？全身帧 ≤3 张且角度互异？正面全身帧唯一？特写帧机位高度区分？**第一帧是否钩子帧？
 - 视频：时间轴总长 = 设定时长？@Image 序号与帧序号一一对应？钩子在前 3 秒？有挂车引导与结尾留白？
-- **模式路由**：未传拼贴参数 → 不输出拼贴提示词、视频用 A2 六图轮播；传了拼贴参数 → 输出拼贴首帧提示词、视频用 A1 拼贴驱动。不得擅自切换。
+- **模式路由**：未传拼贴参数 → 不输出拼贴提示词、视频用 A2 六图轮播；传了拼贴参数 → 输出拼贴首帧提示词、视频用 A1 拼贴驱动；用户仅传服装图并要求海报/四联换装 → 走 `poster-swap` 四条换装提示词。不得擅自切换。
 - **视频开关**：`输出视频` 未开启时不得输出 A1/A2 视频提示词（`beat-video` 模式除外）；开启时视频时长/形态按用户参数。
 - **trio 审计**：trio-images 模式下图1 无宝宝、仅一只成年手且五指正常、服装肩到裤脚完整入画无遮挡？图2/图3 帧结构完整且景别不同？三图画幅一致？
 - 发布文案：各模式输出末尾已附且变体正确（分镜/视频=视频向，trio=图文向）？钩子/卖点/引导与标签齐全？卖点未超出服装锁定块？无绝对化用语与品牌名？
+- 海报换装审计：poster-swap 模式下四条提示词齐全且底图配对正确？服装锁定块四条逐字一致？样式1/3/4 的第二画面同步换装条款在位、样式2 确认无第二画面条款？水印移除条款每条在位？服装锁定块已先与服装图逐项核对？
 - 参数传递审计：用户每个显式字段（月龄/姿势/背景/画幅/时长等）都落实进提示词或脚本？
 - IP：所用宝宝档案是否明确？传入图与档案一致、或更换已获用户确认？
